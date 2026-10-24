@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Knekklast for avstivet søyle – to spenn</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <style>
   :root { --bg:#f6f7f9; --fg:#1d232b; --muted:#5b6673; --card:#fff; --line:#d9dee5; --acc:#1f4e8c; --warn:#8a5a00; --warnbg:#fff6e0; }
   @media (prefers-color-scheme: dark) {
@@ -31,6 +34,19 @@
   small, .note { color:var(--muted); font-size:.85rem; }
   details { margin-top:6px; } summary { cursor:pointer; color:var(--acc); }
   code { background:var(--bg); padding:1px 4px; border-radius:4px; }
+  .guide h2 { font-size:1.3rem; margin-top:0; }
+  .guide h3 { font-size:1.05rem; color:var(--acc); margin:1.4em 0 .4em; }
+  .guide p, .guide li { max-width:75ch; }
+  .guide th, .guide td { text-align:left; vertical-align:top; }
+  .formel { background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px 12px; margin:8px 0; font-family:Cambria,Georgia,serif; font-size:1.02rem; overflow-x:auto; white-space:nowrap; }
+  .utl { border-left:3px solid var(--acc); padding:2px 0 2px 12px; margin:10px 0; }
+  .utl > b:first-child { color:var(--acc); }
+  .toc a { color:var(--acc); text-decoration:none; } .toc a:hover { text-decoration:underline; }
+  .toc { columns:2 260px; margin:6px 0 0; padding-left:20px; }
+  .ex { background:var(--bg); border-radius:8px; padding:8px 12px; margin:10px 0; }
+  .guide > svg { max-width:100%; height:auto; display:block; margin:10px auto; }
+  .guide .katex-display { overflow-x:auto; overflow-y:hidden; padding:10px 0; margin:12px 0; font-size:1.15em; }
+  .guide .katex { font-size:1.05em; }
 </style>
 </head>
 <body>
@@ -84,6 +100,138 @@
     <span>Metode 1</span><span>ledd ved fjæren gir garantert minimum. Kjede: min(K/c, N<sub>E</sub>), c = 1/a₁+1/a₂. Korde: N<sub>L</sub>+(N<sub>E</sub>−N<sub>L</sub>)·min(K/K<sub>krav</sub>,1)</span>
     <span>Metode 2</span><span>eksakt: K(N) = N·c·C/(C−c), C = k(cot k·a₁ + cot k·a₂), k = √(N/EI). Løses for N ved halvering</span>
   </div>
+</div>
+
+<div class="card guide" id="guide">
+<h2>Teorigrunnlag</h2>
+<p>Her gjøres rede for modellen, de to løsningsmetodene og hvordan fjærstivheten for et gitt mål kan bestemmes. Utledningene er tatt med slik at resultatene kan kontrolleres.</p>
+<ol class="toc">
+  <li><a href="#g1">Problemstilling og forutsetninger</a></li>
+  <li><a href="#g2">Referanselaster</a></li>
+  <li><a href="#g3">Metode 1: nedre grense i lukket form</a></li>
+  <li><a href="#g4">Metode 2: eksakt løsning</a></li>
+  <li><a href="#g5">Sammenligning av metodene</a></li>
+  <li><a href="#g6">Dimensjonsløs stivhet og dimensjonering mot η</a></li>
+  <li><a href="#g7">Verifikasjon</a></li>
+  <li><a href="#g8">Begrensninger</a></li>
+  <li><a href="#g9">Referanser</a></li>
+</ol>
+
+<h3 id="g1">1. Problemstilling og forutsetninger</h3>
+<p>Søylen er rett, med konstant bøyestivhet <i>EI</i>, leddet lagret i begge ender og trykt av en konstant aksialkraft <i>N</i>. En diskret fjære med stivhet <i>K</i> virker på tvers av søylen i avstand <i>a</i><sub>1</sub> fra den ene enden og deler den i spenn <i>a</i><sub>1</sub> og <i>a</i><sub>2</sub>, med \(a_1 + a_2 = L\). Det legges til grunn lineær elastisk teori (Euler–Bernoulli) uten skjærdeformasjon. Kritisk last <i>N</i><sub>cr</sub> er den minste <i>N</i> som tillater en ikke-triviell likevektsform.</p>
+<svg viewBox="0 0 520 250" role="img" aria-label="Søyle med fjær delt i to spenn">
+  <g stroke="currentColor" fill="none" stroke-width="2.5">
+    <line x1="170" y1="30" x2="170" y2="220" stroke-dasharray="6 5" opacity=".5"/>
+    <polyline points="170,220 190,130 170,30" stroke="#1f6fd0" stroke-width="4"/>
+    <circle cx="190" cy="130" r="7" fill="var(--card)" stroke="#1f6fd0"/>
+    <polyline points="197,130 225,130 235,116 255,144 275,116 295,144 315,116 335,144 345,130 360,130" stroke-width="2"/>
+    <line x1="360" y1="100" x2="360" y2="160" stroke-width="5"/>
+    <path d="M150 220 l20 -0 l-10 -16z M150 30 l20 0 l-10 16z" opacity=".6"/>
+  </g>
+  <text x="165" y="18" fill="currentColor" font-size="14" text-anchor="middle">N</text>
+  <text x="130" y="85" fill="currentColor" font-size="13" text-anchor="end">a₁ = a_maks</text>
+  <text x="130" y="185" fill="currentColor" font-size="13" text-anchor="end">a₂ = a_min</text>
+  <text x="290" y="106" fill="currentColor" font-size="13" text-anchor="middle">K</text>
+</svg>
+
+<h3 id="g2">2. Referanselaster</h3>
+<p>Fire laster brukes som referanse. Her er \(r = a_{maks}/a_{min}\) og \(c = 1/a_1 + 1/a_2\).</p>
+$$N_L=\frac{\pi^2EI}{L^2},\qquad N_E=\frac{\pi^2EI}{a_{maks}^2},\qquad K_{krav}=N_E\,c,\qquad N_\infty=\lim_{K\to\infty}N_{cr}(K)$$
+<p>\(N_L\) er knekklasten uten fjære, \(N_E\) er Euler-lasten for det lengste spennet alene, \(K_{krav}\) er den stivheten som gir \(N_{cr}=N_E\), og \(N_\infty\) er knekklasten for en uendelig stiv fjære. For alle \(K\ge 0\) gjelder</p>
+$$N_L\;\le\;N_{cr}(K)\;<\;N_\infty ,\qquad \eta=\frac{N_{cr}}{N_\infty}$$
+<p>Knekklengden er \(L_{ef}=\pi\sqrt{EI/N_{cr}}\).</p>
+
+<h3 id="g3">3. Metode 1: nedre grense i lukket form</h3>
+<p><b>Kjedemodell.</b> Et ledd plasseres i fjærpunktet. Hvert spenn blir en rett stav med ledd i begge ender. Et ledd kan bare redusere knekklasten, så den leddede modellen gir en nedre grense. Forskyves leddet sideveis med \(w\), står hvert spenn skrått, og sidekomponenten av aksialkraften er \(Nw/a_1\) og \(Nw/a_2\). Likevekt med fjærkraften \(Kw\) gir</p>
+$$Kw=N w\left(\frac{1}{a_1}+\frac{1}{a_2}\right)\quad\Longrightarrow\quad N=\frac{K}{c}$$
+<p>Modellen gjelder bare så lenge ingen av stavene knekker selv. Det lengste spennet gjør det ved \(N_E\), så</p>
+$$\boxed{\,N_{cr}\;\ge\;\min\!\left(\frac{K}{c},\,N_E\right)\,},\qquad N_{cr}\ge N_E\ \text{ når }\ K\ge K_{krav}=N_E\,c$$
+
+<p><b>Korde.</b> Rayleigh-kvotienten for en kinematisk tillatt form \(u\) er</p>
+$$R(u,K)=\frac{\int EI\,u''^2\,dx+K\,u(a_1)^2}{\int u'^2\,dx},\qquad N_{cr}(K)=\min_u R(u,K)$$
+<p>For hver fast \(u\) er \(R\) lineær i \(K\). Minimum av lineære funksjoner er konkavt, så \(N_{cr}(K)\) ligger over korden mellom \((0,N_L)\) og \((K_{krav},N_E)\):</p>
+$$\boxed{\,N_{cr}\;\ge\;N_L+(N_E-N_L)\,\frac{K}{K_{krav}}\,},\qquad 0\le K\le K_{krav}$$
+<p>Kordeformelen er alltid minst like god som kjedeformelen, siden \(N_L(1-K/K_{krav})\ge 0\). Største avvik fra eksakt verdi er ca. 4 % av \(N_E\).</p>
+
+<h3 id="g4">4. Metode 2: eksakt løsning</h3>
+<p>I hvert spenn gjelder \(EI\,w''''+N\,w''=0\) med løsning \(w=A\sin kx+B\cos kx+Px+Q\), \(k=\sqrt{N/EI}\). Leddet ende (\(w=0\), \(w''=0\)) gir \(B=Q=0\). Med \(x\) og \(\xi\) målt fra hver sin ende er</p>
+$$w_1=A\sin kx+P_1x,\qquad w_2=B\sin k\xi+P_2\xi$$
+<p>Leddene \(P_ix\) representerer sidereaksjonene i endene som fjærkraften gir. Fire betingelser ved fjæren, med utbøyning \(\delta\):</p>
+$$\begin{aligned}
+&\text{(i) moment:} && A\sin ka_1=B\sin ka_2=:D\\
+&\text{(ii) utbøyning:} && D+P_1a_1=D+P_2a_2=\delta\ \Rightarrow\ P_i=\frac{\delta-D}{a_i}\\
+&\text{(iii) stigning:} && Ak\cos ka_1+P_1=-\left(Bk\cos ka_2+P_2\right)\\
+&\text{(iv) likevekt:} && N(P_1+P_2)=K\delta
+\end{aligned}$$
+<p>Med \(C=k(\cot ka_1+\cot ka_2)\) gir (iii) \(DC=-(\delta-D)c\), og (iv) gir \(N(\delta-D)c=K\delta\). Elimineres \(\delta\) og \(D\):</p>
+$$\boxed{\,K(N)=\frac{N\,c\,C}{C-c}\,},\qquad C=k\left(\cot ka_1+\cot ka_2\right),\quad k=\sqrt{N/EI}$$
+<p>Dette er Timoshenko og Geres lign. (f) (art. 2.6) skrevet med cot. I den originale formen med \(u_i=\tfrac{a_i}{2}k\) er</p>
+$$K(N)=\frac{N}{\dfrac{a_1a_2}{a_1+a_2}-(a_1+a_2)\,S},\qquad S=\frac{\sin 2u_1\,\sin 2u_2}{2(u_1+u_2)\,\sin 2(u_1+u_2)}$$
+<p><b>Egenskaper.</b></p>
+<ul>
+<li>For \(N\to N_E\) er \(ka_1\to\pi\), \(\cot ka_1\to\infty\) og \(K\to Nc=K_{krav}\). Formelen gir altså kravet fra metode 1, og \(N_{cr}(K_{krav})=N_E\) er eksakt.</li>
+<li>\(K\to\infty\) når \(C=c\). Dette er platålasten \(N_\infty\), første rot av \(C(N)-c=0\) over \(N_E\).</li>
+<li>\(K(N)\) vokser monotont fra 0 (ved \(N_L\)) til \(\infty\) (ved \(N_\infty\)). \(N_{cr}\) er dermed den entydige løsningen av \(K(N)=K\) på \((N_L,N_\infty)\), funnet ved halvering av intervallet.</li>
+</ul>
+<div class="ex"><b>Eksempel,</b> \(a_1=5400\), \(a_2=3600\) mm, \(EI=1{,}1113\cdot10^{12}\) N·mm², \(N=436\) kN:
+$$k=6{,}2637\cdot10^{-4},\quad ka_1=3{,}3824,\quad ka_2=2{,}2549,\quad \cot ka_1=4{,}0726,\quad \cot ka_2=-0{,}8155$$
+$$C=2{,}0401\cdot10^{-3},\quad c=4{,}6296\cdot10^{-4},\quad K=\frac{436000\cdot c\cdot C}{C-c}=261{,}1\ \text{N/mm}$$
+</div>
+
+<h3 id="g5">5. Sammenligning av metodene</h3>
+<div class="scroll"><table>
+<tr><th></th><th>Metode 1</th><th>Metode 2</th></tr>
+<tr><td>Resultat</td><td>nedre grense</td><td>eksakt innenfor modellen</td></tr>
+<tr><td>Grunnlag</td><td>ledd i fjærpunktet; Rayleigh-kvotient og konkavitet</td><td>likevekt og kompatibilitet for bøyekurvene i begge spenn</td></tr>
+<tr><td>For \(K\ge K_{krav}\)</td><td>\(N_{cr}\ge N_E\) (ingen videre informasjon)</td><td>\(N_{cr}\) helt opp mot \(N_\infty\)</td></tr>
+<tr><td>Eksempel, \(K=261{,}2\) N/mm</td><td>376,1 kN</td><td>436,0 kN</td></tr>
+</table></div>
+<p>Metodene sammenfaller i \(K=K_{krav}\), der begge gir \(N_E\).</p>
+
+<h3 id="g6">6. Dimensjonsløs stivhet og dimensjonering mot η</h3>
+<p>Med referanselengde \(a\) er dimensjonsløs fjærstivhet \(\bar K = Ka^3/EI\). Kravet med \(a=a_{maks}\) er</p>
+$$\bar K_{krav}=\frac{K_{krav}\,a_{maks}^3}{EI}=\pi^2 a_{maks}\left(\frac1{a_1}+\frac1{a_2}\right)=\boxed{\pi^2\,(1+r)}$$
+<p>Kravet sikrer bare \(N_{cr}=N_E\). For å nærme seg \(N_\infty\) multipliseres med en faktor \(m(r)\):</p>
+$$m=\sqrt r\ \ (\eta\approx 0{,}90),\qquad m=r\ \ (\eta\approx 0{,}95),\qquad m=(r+1)^2\ \ (\eta\approx 0{,}99)$$
+<p>Faktorene er <b>empiriske</b>, tilpasset beregninger for \(1{,}1\le r\le 8\) og \(L=4\)–\(17\) m (K̄ er uavhengig av \(L\) og \(EI\)). De er ikke utledet. Oppnådd \(\eta\) avhenger av utgangspunktet \(K_0\):</p>
+<ul>
+<li><b>A:</b> \(K_0=\bar K_{krav}\,EI/a_{maks}^3=K_{krav}\)</li>
+<li><b>B:</b> \(K_0=K_{gj}=\bar K_{krav}\,EI/(L/2)^3\), referanse gjennomsnittsspennet.</li>
+</ul>
+<div class="scroll"><table>
+<tr><th>Mål</th><th>\(m\) (\(r=1{,}5\))</th><th>η, utgangspunkt A</th><th>η, utgangspunkt B</th></tr>
+<tr><td>90 %</td><td>1,225</td><td>80,9 %</td><td>92,4 %</td></tr>
+<tr><td>95 %</td><td>1,500</td><td>86,4 %</td><td>94,5 %</td></tr>
+<tr><td>99 %</td><td>6,250</td><td>98,3 %</td><td>99,1 %</td></tr>
+</table></div>
+<p>Faktorene ble kalibrert mot B. Med A gir de lavere \(\eta\) enn målet, men fortsatt \(N_{cr}>N_E\), siden \(N_{cr}\) vokser monotont med \(K\) og \(K_{krav}\) er eksakt.</p>
+
+<h3 id="g7">7. Verifikasjon</h3>
+<ul>
+<li>Grensetilfeller: \(K=0\Rightarrow N_L\); \(K=K_{krav}\Rightarrow N_E\) (eksakt); \(K\to\infty\Rightarrow N_\infty\).</li>
+<li>Spenn 1 : 2: formelen \(C=c\) gir \(N_\infty=3{,}719\,EI/l_1^2\), mot 3,72 hos Timoshenko og Gere.</li>
+<li>Metode 2 er identisk med Timoshenko og Geres lign. (f), kontrollert tallmessig.</li>
+<li>Uavhengig FE-modell (bjelkeelementer, egenverdiproblem): samme \(N_{cr}\) på fem sifre, f.eks. 436,05 kN mot 436,0 kN.</li>
+<li>Focus Konstruksjon: avvik ca. 0,1–0,2 % i de fleste tilfeller. Ett tilfelle (\(K=1000\) N/mm) avviker 0,9 %, årsaken er ikke avklart.</li>
+<li>Metode 1 testet på 6000 tilfeldige systemer uten brudd på nedre grense.</li>
+</ul>
+
+<h3 id="g8">8. Begrensninger</h3>
+<ul>
+<li>To spenn, én fjære, leddede ender, konstant \(EI\). Formlene gjelder ikke for flere spenn eller fjærer.</li>
+<li>Skjærdeformasjon er ikke inkludert (opptil ca. 2 %).</li>
+<li>\(N_{cr}\) er elastisk knekklast, ikke dimensjonerende kapasitet. Avstiverens kraft, forbindelsenes styrke og imperfeksjoner behandles separat.</li>
+<li>Virkelig fjærstivhet er en seriekobling, \(1/K=\sum 1/K_i\), der forbindelser og understøttende konstruksjon bidrar.</li>
+<li>Faktorene \(m(r)\) er tilpasset. E-modulene i materiallisten bør kontrolleres mot EN 14080 og EN 338.</li>
+</ul>
+
+<h3 id="g9">9. Referanser</h3>
+<ol class="note refs">
+<li>Stamatopoulos, H. og Massaro, F. M. (2025). Bracing stiffness requirements of members supported by discrete elastic supports. <i>Wood Material Science &amp; Engineering</i>. <a href="https://doi.org/10.1080/17480272.2025.2533329">https://doi.org/10.1080/17480272.2025.2533329</a> (i teksten referert til som S&amp;M (2025)).</li>
+<li>Timoshenko, S. P. og Gere, J. M., <i>Theory of Elastic Stability</i>, 2. utg., art. 2.5–2.6.</li>
+</ol>
+<p class="note">Verktøyet er ikke et offisielt dimensjoneringsverktøy.</p>
+<p class="note" style="text-align:center; margin-top:18px">Av Joachim Mathiesen Eide &middot; NTNU, høsten 2026 &middot; Versjon 24.10.2026</p>
 </div>
 
 </main>
@@ -188,6 +336,16 @@ function regn() {
   $("resMaal").innerHTML = html;
 }
 init();
+</script>
+<script>
+window.addEventListener("load", function () {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.getElementById("guide"), {
+      delimiters: [{left: "$$", right: "$$", display: true}, {left: "\\(", right: "\\)", display: false}],
+      throwOnError: false
+    });
+  }
+});
 </script>
 </body>
 </html>
