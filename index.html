@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knekklast for avstivet søyle – to spenn</title>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1d232b; --muted:#5b6673; --card:#fff; --line:#d9dee5; --acc:#1f4e8c; --warn:#8a5a00; --warnbg:#fff6e0; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14181d; --fg:#e8ecf1; --muted:#9aa6b4; --card:#1d232b; --line:#323b46; --acc:#7db0f0; --warn:#f0c674; --warnbg:#2a2415; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,Segoe UI,Roboto,sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:16px; }
+  h1 { font-size:1.5rem; margin:.4em 0 .2em; }
+  h2 { font-size:1.15rem; margin:0 0 .6em; color:var(--acc); }
+  p.lead { color:var(--muted); margin-top:0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:14px 0; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px 14px; }
+  label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:2px; }
+  input, select { width:100%; padding:7px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); font:inherit; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; }
+  th, td { text-align:right; padding:5px 7px; border-bottom:1px solid var(--line); }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--muted); font-weight:600; }
+  .scroll { overflow-x:auto; }
+  .kv { display:grid; grid-template-columns:auto 1fr; gap:3px 14px; }
+  .kv span:nth-child(odd) { color:var(--muted); }
+  .warn { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:8px 10px; font-size:.9rem; margin:8px 0; }
+  .big { font-size:1.35rem; font-weight:700; }
+  small, .note { color:var(--muted); font-size:.85rem; }
+  details { margin-top:6px; } summary { cursor:pointer; color:var(--acc); }
+  code { background:var(--bg); padding:1px 4px; border-radius:4px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Knekklast for avstivet søyle – to spenn</h1>
+<p class="lead">Søyle leddet i begge ender, delt i to spenn av én fjær (avstivning). Svar med <b>metode 1</b> (formel, garantert minimum) og <b>metode 2</b> (eksakt).</p>
+
+<div class="card">
+  <h2>1. Søylen</h2>
+  <div class="grid">
+    <div><label for="b">Bredde b (mm) – tykkelse om svak akse</label><input id="b" type="number" value="140" min="1" step="1"></div>
+    <div><label for="h">Høyde h (mm)</label><input id="h" type="number" value="450" min="1" step="1"></div>
+    <div><label for="akse">Knekking om</label>
+      <select id="akse"><option value="svak">svak akse (I = h·b³/12)</option><option value="sterk">sterk akse (I = b·h³/12)</option></select></div>
+    <div><label for="mat">Materiale</label>
+      <select id="mat"></select></div>
+    <div><label for="E">E-modul (N/mm²)</label><input id="E" type="number" value="10800" min="1" step="100"></div>
+    <div><label for="L">Total lengde L (m)</label><input id="L" type="number" value="9" min="0.1" step="0.1"></div>
+    <div><label for="a1">Lengste spenn a_maks (m)</label><input id="a1" type="number" value="5.4" min="0.05" step="0.05"></div>
+    <div><label>Korteste spenn a_min (m)</label><input id="a2" type="number" disabled></div>
+  </div>
+  <p class="note" id="egenskaper"></p>
+</div>
+
+<div class="card">
+  <h2>2. Gitt fjærstivhet K</h2>
+  <div class="grid">
+    <div><label for="K">Fjærstivhet K (N/mm)</label><input id="K" type="number" value="261.2" min="0" step="1"></div>
+  </div>
+  <div id="resK"></div>
+</div>
+
+<div class="card">
+  <h2>3. Hvilken K trengs for 90, 95 og 99 %?</h2>
+  <p class="note">K = m · K<sub>0</sub> med m = √r (90 %), r (95 %) og (r+1)² (99 %), r = a_maks/a_min. To utgangspunkt K<sub>0</sub>: A = K<sub>krav</sub> (referanselengde a_maks), B = K<sub>gj</sub> (referanselengde L/2). η = N<sub>cr</sub>/N<sup>∞</sup> er det faktisk oppnådde.</p>
+  <div class="scroll" id="resMaal"></div>
+</div>
+
+<div class="warn">
+  <b>Forbehold.</b> Lineær elastisk teori (Euler–Bernoulli), uten skjærdeformasjon (opptil ca. 2 %). Gjelder kun to spenn med én fjær, leddet ender og konstant EI. N<sub>cr</sub> er elastisk knekklast, ikke dimensjonerende kapasitet; den må brukes videre i knekkontrollen etter EC5.
+  Faktorene m (√r, r, (r+1)²) er tilpasset beregninger (r 1,1–8, lengder 4–17 m), ikke utledet. Kontroller E-modul mot EN 14080 og verktøyet mot egne beregninger før bruk.
+</div>
+
+<div class="card">
+  <h2>Forklaring</h2>
+  <div class="kv">
+    <span>N<sub>L</sub></span><span>knekklast uten fjær: π²EI/L²</span>
+    <span>N<sub>E</sub></span><span>Euler-last for det lengste spennet alene: π²EI/a_maks²</span>
+    <span>K<sub>krav</sub></span><span>stivhet som akkurat gir N<sub>E</sub>: N<sub>E</sub>(1/a₁ + 1/a₂)</span>
+    <span>N<sup>∞</sup></span><span>platålast: knekklast med uendelig stiv fjær (øvre grense)</span>
+    <span>Metode 1</span><span>ledd ved fjæren gir garantert minimum. Kjede: min(K/c, N<sub>E</sub>), c = 1/a₁+1/a₂. Korde: N<sub>L</sub>+(N<sub>E</sub>−N<sub>L</sub>)·min(K/K<sub>krav</sub>,1)</span>
+    <span>Metode 2</span><span>eksakt: K(N) = N·c·C/(C−c), C = k(cot k·a₁ + cot k·a₂), k = √(N/EI). Løses for N ved halvering</span>
+  </div>
+</div>
+
+</main>
+<script>
+"use strict";
+// ---- materialdata: E0,g,05 (N/mm2) for limtre (EN 14080) og konstruksjonsvirke (EN 338); kontroller mot gjeldende standard
+const MATERIALER = [
+  ["GL30c (E0,g,05 = 10 800)", 10800], ["GL24c (9 100)", 9100], ["GL28c (10 100)", 10100], ["GL32c (11 400)", 11400],
+  ["GL24h (9 600)", 9600], ["GL28h (10 500)", 10500], ["GL30h (11 300)", 11300], ["GL32h (11 800)", 11800],
+  ["C24 (E0,05 = 7 400)", 7400], ["C30 (8 000)", 8000], ["Stål S355 (210 000)", 210000], ["Egen verdi", null]
+];
+
+const $ = id => document.getElementById(id);
+const f = (x, d = 1) => Number.isFinite(x) ? x.toLocaleString("nb-NO", {minimumFractionDigits:d, maximumFractionDigits:d}) : "–";
+const cot = x => 1 / Math.tan(x);
+
+// ---------------- beregningskjerne (samme som Python-skriptet) ----------------
+function lag(EI, a1, a2) {
+  const L = a1 + a2, c = 1 / a1 + 1 / a2;
+  const NL = Math.PI ** 2 * EI / L ** 2, NE = Math.PI ** 2 * EI / a1 ** 2, Kkrav = NE * c;
+  const lik = Math.abs(a1 - a2) < 1e-9 * L;           // like spenn: N_inf = N_E
+  const C = N => { const k = Math.sqrt(N / EI); return k * (cot(k * a1) + cot(k * a2)); };
+  const KavN = N => { const Cn = C(N); return N * c * Cn / (Cn - c); };
+  let Ninf;
+  if (lik) { Ninf = NE; }
+  else {
+    let lo = NE * 1.0001, st = NE * 0.001, hi = lo + st, n = 0;
+    while (C(hi) - c > 0 && n++ < 5000) { lo = hi; hi += st; }
+    for (let i = 0; i < 80; i++) { const m = 0.5 * (lo + hi); if (C(m) - c > 0) lo = m; else hi = m; }
+    Ninf = 0.5 * (lo + hi);
+  }
+  const metode2 = K => {
+    if (lik && K >= Kkrav) return NE;
+    let lo = NL * 1.0000001, hi = Ninf * 0.9999999;
+    for (let i = 0; i < 100; i++) {
+      let m = 0.5 * (lo + hi);
+      if (Math.abs(m - NE) < 1e-6 * NE) m = NE * (1 + 2e-6);
+      if (KavN(m) < K) lo = m; else hi = m;
+    }
+    return 0.5 * (lo + hi);
+  };
+  const kjede = K => Math.min(K / c, NE);
+  const korde = K => NL + (NE - NL) * Math.min(K / Kkrav, 1);
+  return {L, c, NL, NE, Kkrav, Ninf, metode2, kjede, korde, KavN};
+}
+
+// ---------------- grensesnitt ----------------
+function init() {
+  const sel = $("mat");
+  MATERIALER.forEach((m, i) => { const o = document.createElement("option"); o.value = i; o.textContent = m[0]; sel.appendChild(o); });
+  sel.addEventListener("change", () => { const v = MATERIALER[sel.value][1]; if (v) $("E").value = v; regn(); });
+  document.querySelectorAll("input").forEach(e => e.addEventListener("input", () => { if (e.id === "E") sel.value = MATERIALER.length - 1; regn(); }));
+  $("akse").addEventListener("change", regn);
+  regn();
+}
+
+function regn() {
+  const b = +$("b").value, h = +$("h").value, E = +$("E").value;
+  const Lm = +$("L").value, a1m = +$("a1").value, K = +$("K").value;
+  const a2m = Lm - a1m;
+  $("a2").value = Number.isFinite(a2m) ? a2m.toFixed(3) : "";
+  const feil = [];
+  if (!(b > 0 && h > 0 && E > 0 && Lm > 0)) feil.push("Fyll inn gyldige tverrsnitts-, material- og lengdeverdier.");
+  if (a1m < Lm / 2 - 1e-9) feil.push("a_maks må være minst L/2 (det lengste spennet).");
+  if (a1m >= Lm) feil.push("a_maks må være mindre enn L.");
+  if (feil.length) { $("resK").innerHTML = '<div class="warn">' + feil.join("<br>") + "</div>"; $("resMaal").innerHTML = ""; $("egenskaper").textContent = ""; return; }
+
+  const I = $("akse").value === "svak" ? h * b ** 3 / 12 : b * h ** 3 / 12;
+  const EI = E * I;
+  const a1 = a1m * 1000, a2 = a2m * 1000, L = Lm * 1000;
+  const r = a1 / a2;
+  $("egenskaper").textContent = `I = ${I.toExponential(4)} mm⁴,  EI = ${EI.toExponential(4)} N·mm²,  r = a_maks/a_min = ${f(r, 3)}`;
+  const s = lag(EI, a1, a2);
+  const kN = x => f(x / 1000, 1);
+  const Lef = N => f(Math.PI * Math.sqrt(EI / N) / 1000, 2);
+
+  const n2 = s.metode2(K), n1k = s.kjede(K), n1c = s.korde(K);
+  $("resK").innerHTML =
+    `<div class="kv" style="margin:8px 0">
+       <span>N<sub>L</sub> (uten fjær)</span><span>${kN(s.NL)} kN</span>
+       <span>N<sub>E</sub> (lengste spenn alene)</span><span>${kN(s.NE)} kN</span>
+       <span>K<sub>krav</sub></span><span>${f(s.Kkrav, 1)} N/mm</span>
+       <span>N<sup>∞</sup> (platålast)</span><span>${kN(s.Ninf)} kN</span></div>
+     <div class="scroll"><table><tr><th>Metode</th><th>N<sub>cr</sub> (kN)</th><th>η = N<sub>cr</sub>/N<sup>∞</sup></th><th>L<sub>ef</sub> (m)</th></tr>
+       <tr><td>Metode 1 – kjede (minimum)</td><td>${kN(n1k)}</td><td>${f(100 * n1k / s.Ninf, 1)} %</td><td>${Lef(n1k)}</td></tr>
+       <tr><td>Metode 1 – korde (minimum)</td><td>${kN(n1c)}</td><td>${f(100 * n1c / s.Ninf, 1)} %</td><td>${Lef(n1c)}</td></tr>
+       <tr><td><b>Metode 2 – eksakt</b></td><td class="big">${kN(n2)}</td><td>${f(100 * n2 / s.Ninf, 1)} %</td><td>${Lef(n2)}</td></tr></table></div>
+     <p class="note">Er K ≥ K<sub>krav</sub>, kan metode 1 bare si «minst N<sub>E</sub>». Bruk metode 2 for et riktig tall. L<sub>ef</sub> = π√(EI/N<sub>cr</sub>).</p>`;
+
+  const Kbar = Math.PI ** 2 * (1 + r);
+  const baser = [["A: K_krav (a_maks)", Kbar * EI / a1 ** 3], ["B: K_gj (L/2)", Kbar * EI / (L / 2) ** 3]];
+  const mal = [["90 %", Math.sqrt(r)], ["95 %", r], ["99 %", (r + 1) ** 2]];
+  let html = "";
+  for (const [navn, K0] of baser) {
+    html += `<table style="margin-bottom:12px"><tr><th>${navn}: K₀ = ${f(K0, 1)} N/mm</th><th>m</th><th>K (N/mm)</th><th>Metode 1 (kN)</th><th>Metode 2 (kN)</th><th>η</th><th>L<sub>ef</sub> (m)</th></tr>`;
+    for (const [t, m] of mal) {
+      const Kk = m * K0, e = s.metode2(Kk);
+      html += `<tr><td>Mål ${t}</td><td>${f(m, 3)}</td><td>${f(Kk, 1)}</td><td>${kN(s.korde(Kk))}</td><td><b>${kN(e)}</b></td><td>${f(100 * e / s.Ninf, 1)} %</td><td>${Lef(e)}</td></tr>`;
+    }
+    html += "</table>";
+  }
+  $("resMaal").innerHTML = html;
+}
+init();
+</script>
+</body>
+</html>
